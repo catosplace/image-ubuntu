@@ -2,6 +2,7 @@
 !builds
 builds/*
 !builds/.gitkeep
+/packer_cache/
 
 ### Packer ISOs
 !iso

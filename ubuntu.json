@@ -6,7 +6,7 @@
     {
       "boot_command": [
         "{{ user `boot_command_prefix` }}",
-        "install/vmlinuz<wait>",
+        "/install/vmlinuz noapic<wait>",
         " auto<wait>",
         " console-setup/ask_detect=false<wait>",
         " console-setup/layoutcode=us<wait>",
@@ -35,7 +35,7 @@
         " -- <wait>",
         "<enter><wait>"
       ],
-      "boot_wait": "10s",
+      "boot_wait": "5s",
       "cpus" : "{{user `build_cpus` }}",
       "disk_size": "{{user `disk_size` }}",
       "floppy_files": [
@@ -51,7 +51,8 @@
       "iso_urls": [
         "./iso/{{ user `iso_name` }}",
         "{{ user `iso_mirror` }}",
-        "http://releases.ubuntu.com/{{user `iso_path`}}/{{user `iso_name`}}"
+        "http://releases.ubuntu.com/{{ user `iso_path` }}/{{ user `iso_name` }}",
+        "http://cdimage.ubuntu.com/releases/{{ user `iso_version` }}/release/{{ user `iso_name` }}"
       ],
       "output_directory": "builds/packer-{{user `vm_name`}}-virtualbox-iso",
       "post_shutdown_delay": "1m",
@@ -75,13 +76,14 @@
     "build_cpus": "2",
     "cpus": "2",
     "disk_size": "40960",
-    "headless": "true",
+    "headless": "false",
     "hostname": "vagrant",
-    "iso_checksum": "ea6ccb5b57813908c006f42f7ac8eaa4fc603883a2d07876cf9ed74610ba2f53",
+    "iso_checksum": "a2cb36dc010d98ad9253ea5ad5a07fd6b409e3412c48f1860536970b073c98f5",
     "iso_checksum_type": "sha256",
-    "iso_name": "ubuntu-18.04.2-live-server-amd64.iso",
-    "iso_mirror": "http://ucmirror.canterbury.ac.nz/linux/ubuntu/bionic/ubuntu-18.04.2-live-server-amd64.iso",
+    "iso_name": "ubuntu-18.04.2-server-amd64.iso",
+    "iso_mirror": "http://ucmirror.canterbury.ac.nz/linux/ubuntu/bionic/ubuntu-18.04.2-server-amd64.iso",
     "iso_path": "bionic",
+    "iso_version": "18.04",
     "locale": "en_NZ",
     "memory": "1024",
     "preseed": "preseed.cfg",
