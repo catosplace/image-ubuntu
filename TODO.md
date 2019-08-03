@@ -5,7 +5,7 @@
 * Build
   * Convert from `preseed.cfg` to [Subiquity](https://github.com/CanonicalLtd/subiquity)
 * Provisioning
-  * Ansible Modules
+  * Ansible Modules (Initial Implementation - Rough)
   * Clean Up
   * Minimise Box (Remove uneeded components)
 * Post-Processing
