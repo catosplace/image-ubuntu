@@ -6,7 +6,7 @@
   * Convert from `preseed.cfg` to [Subiquity](https://github.com/CanonicalLtd/subiquity)
 * Provisioning
   * Ansible Modules (Initial Implementation - Rough)
-  * Clean Up
+  * Clean Up (Remove Ansible etc.)
   * Minimise Box (Remove uneeded components)
 * Post-Processing
   * Vagrant Box Versioning
