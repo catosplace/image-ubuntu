@@ -28,3 +28,5 @@
 * Virtualbox
   * Minimal Version
   * Supported Versions
+  
+Circle CI or Concourse
