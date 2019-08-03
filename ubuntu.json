@@ -79,6 +79,11 @@
         "scripts/ansible.sh",
         "scripts/setup.sh"
       ]
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "ansible/main.yml",
+      "galaxy_file": "requirements.yml"
     }
   ],
   "_comment": "Validate with `packer validate ubuntu.json`",
