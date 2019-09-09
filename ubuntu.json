@@ -86,6 +86,14 @@
       "galaxy_file": "requirements.yml"
     }
   ],
+  "post-processors": [
+    [
+      {
+        "type": "vagrant",
+        "output": "builds/{{.Provider}}-ubuntu1804.box"
+      }
+    ]
+  ],
   "_comment": "Validate with `packer validate ubuntu.json`",
   "variables": {
     "boot_command_prefix": "<esc><wait><esc><wait><enter><wait>",

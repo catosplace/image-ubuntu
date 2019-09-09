@@ -3,12 +3,15 @@
 ## Content
 
 * Build
-  * Convert from `preseed.cfg` to [Subiquity](https://github.com/CanonicalLtd/subiquity)
+  * Convert from `preseed.cfg` to [Subiquity](https://github.com/CanonicalLtd/subiquity
+  * Subiquity not really ready in 18.04, looks set for 20.04
 * Provisioning
   * Ansible Modules (Initial Implementation - Rough)
   * Clean Up (Remove Ansible etc.)
   * Minimise Box (Remove uneeded components)
 * Post-Processing
+  * Vagrant Box
+  * Vagrant Cloud Box - Versioned
   * Vagrant Box Versioning
 
 ## Build Process
