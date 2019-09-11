@@ -90,7 +90,12 @@
     [
       {
         "type": "vagrant",
-        "output": "builds/{{.Provider}}-ubuntu1804.box"
+        "output": "builds/ubuntu1804-base.box"
+      },
+      {
+        "type": "vagrant-cloud",
+        "box_tag": "psellars/ubuntu1804-base",
+        "version": "{{user `version`}}"
       }
     ]
   ],
@@ -115,6 +120,7 @@
     "ssh_username": "vagrant",
     "time_zone": "Pacific/Auckland",
     "user_uid": "1000",
-    "vm_name": "ubuntu1804"
+    "vm_name": "ubuntu1804",
+    "version": ""
   }
 }
