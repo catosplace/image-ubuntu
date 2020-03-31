@@ -7,7 +7,7 @@ boot_command_prefix = \
 build_cpus = UserVar("build_cpus","2")
 cpus = UserVar("cpus","2") 
 disk_size = UserVar("disk_size","40960")
-headless = UserVar("headless","true")
+headless = UserVar("headless","false")
 hostname = UserVar("hostname","vagrant")
 iso_checksum = \
 	UserVar("iso_checksum","c0d025e560d54434a925b3707f8686a7f588c42a5fbc609b8ea2447f88847041")
