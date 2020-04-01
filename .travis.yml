@@ -4,7 +4,7 @@ python:
   - "3.6"
 
 install:
-  - ./install-virtualbox-builder.sh
+  - sudo ./install-virtualbox-builder.sh
   - pip install -r requirements.txt
 
 script:
