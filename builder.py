@@ -1,7 +1,11 @@
-import imp
-from packerlicious import builder, Ref, Template, UserVar
+import imp, sys
+from packerlicious import builder, post_processor, provisioner, \
+        Ref, Template, UserVar
 from packerpy import PackerExecutable
 
+my_access_token = sys.argv[1]
+
+access_token = UserVar("access_token",my_access_token)
 boot_command_prefix = \
 	UserVar("boot_command_prefix","<esc><wait><esc><wait><enter><wait>")
 build_cpus = UserVar("build_cpus","2")
@@ -10,19 +14,21 @@ disk_size = UserVar("disk_size","40960")
 headless = UserVar("headless","false")
 hostname = UserVar("hostname","vagrant")
 iso_checksum = \
-	UserVar("iso_checksum","c0d025e560d54434a925b3707f8686a7f588c42a5fbc609b8ea2447f88847041")
+	UserVar("iso_checksum","e2ecdace33c939527cbc9e8d23576381c493b071107207d2040af72595f8990b")
 iso_url = \
-	UserVar("iso_url","http://releases.ubuntu.com/18.04.4/ubuntu-18.04.4-desktop-amd64.iso")
+	UserVar("iso_url","http://cdimage.ubuntu.com/ubuntu/releases/18.04.4/release/ubuntu-18.04.4-server-amd64.iso")
 locale = UserVar("locale","en_NZ")
 memory = UserVar("memory","2048")
-preseed = UserVar("preseed","preseed.cfg")
+preseed = UserVar("preseed","server.cfg")
 ssh_password = UserVar("ssh_password","vagrant")
 ssh_username = UserVar("ssh_username","vagrant")
 time_zone = UserVar("time_zone","Pacific/Auckland")
 user_uid = UserVar("user_uid","1000")
+version = UserVar("version","1.0.0")
 vm_name = UserVar("vm_name","ubuntu1804-desktop")
 
-user_variables = [
+desktop_user_variables = [
+        access_token,
 	boot_command_prefix,
 	build_cpus,
 	cpus,
@@ -33,12 +39,13 @@ user_variables = [
 	iso_url,
 	locale,
 	memory,
-	preseed,
+	UserVar("preseed","desktop.cfg"),
 	ssh_password,
 	ssh_username,
 	time_zone,
 	user_uid,
-	vm_name
+        version,
+        vm_name
 ]
 
 builders = [
@@ -92,7 +99,7 @@ builders = [
 			"-virtualbox-iso",
 		post_shutdown_delay = "1m",
 		shutdown_command = 
-			"echo '" + Ref(ssh_username).data + " | sudo -S shutdown -P now",
+			"echo '" + Ref(ssh_password).data + "' | sudo -S shutdown -P now",
 		ssh_username = Ref(ssh_username),
 		ssh_password = Ref(ssh_password),
 		ssh_timeout = "10000s",
@@ -106,14 +113,52 @@ builders = [
 	)	
 ]
 
+provisioners = [
+    provisioner.Shell(
+        execute_command = "echo '" + Ref(ssh_password).data + \
+                "' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+        expect_disconnect = "true",
+        scripts = [
+            "scripts/ansible.sh",
+            "scripts/setup.sh"
+        ]
+    ),
+    provisioner.AnsibleLocal(
+        playbook_file = "shared/main.yml",
+        galaxy_file = "shared/requirements.yml"
+    ),
+    provisioner.Shell(
+        execute_command = "echo '" + Ref(ssh_password).data + \
+                "' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+        expect_disconnect = "true",
+        scripts = [
+            "scripts/clean.sh"
+        ]
+    ),
+]
+
+post_processors = [
+        post_processor.Vagrant(
+            output = "builds/ubuntu1804-base.box"
+        ),
+        post_processor.VagrantCloud(
+            box_tag = "catosplace/ubuntu1804-desktop",
+            access_token = Ref(access_token),
+            version = Ref(version)
+        )
+]
+
 t = Template()
-t.add_variable(user_variables)
+
+t.add_variable(desktop_user_variables)
 t.add_builder(builders)
+t.add_provisioner(provisioners)
+t.add_post_processor(post_processors)
 
-print(t.to_json())
+#print(t.to_json())
 
-(ret, out, err) = PackerExecutable().validate(t.to_json())
-print(out)
+(ret, out, err) = PackerExecutable(machine_readable=False).validate(t.to_json())
+print(out.decode('unicode_escape'))
 
-(ret, out, err) = PackerExecutable().build(t.to_json())
-print(out)
+#(ret, out, err) = PackerExecutable().build(t.to_json())
+#print(out.decode('unicode_escape'))
