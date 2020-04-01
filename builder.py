@@ -1,4 +1,4 @@
-import imp, sys
+import imp, json, requests, sys
 from packerlicious import builder, post_processor, provisioner, \
         Ref, Template, UserVar
 from packerpy import PackerExecutable
@@ -24,7 +24,6 @@ ssh_password = UserVar("ssh_password","vagrant")
 ssh_username = UserVar("ssh_username","vagrant")
 time_zone = UserVar("time_zone","Pacific/Auckland")
 user_uid = UserVar("user_uid","1000")
-version = UserVar("version","1.0.0")
 vm_name = UserVar("vm_name","ubuntu1804-desktop")
 
 desktop_user_variables = [
@@ -44,7 +43,6 @@ desktop_user_variables = [
 	ssh_username,
 	time_zone,
 	user_uid,
-        version,
         vm_name
 ]
 
@@ -55,7 +53,7 @@ builders = [
 			"/install/vmlinuz",
 			" auto",
 			" console-setup/ask_detect=false",
-			" console-setup/modelcode=pc105",
+			" console-setGup/modelcode=pc105",
 			" debconf/frontend=noninteractive",
 			" debian-installer=" + Ref(locale).data,
 			" fb=false",
@@ -137,29 +135,43 @@ provisioners = [
     ),
 ]
 
+# Get Next Box Version
+r = requests.get("https://app.vagrantup.com/api/v1/box/catosplace/ubuntu1804-base")
+current_box_version = json.loads(r.text)["current_version"]
+
+if current_box_version is None:
+    next_box_version = "1.0.0"
+else:
+    next_box_version = str(current_box_version.split('.')[0]) + "." + \
+            str(current_box_version.split('.')[1]) + "." + \
+            str(int(current_box_version.split('.')[2]) + 1)
+
+print("Building new catosplace/ubuntu1804-base box version " + next_box_version)
+version = UserVar("version", next_box_version)
+
 post_processors = [
         post_processor.Vagrant(
             output = "builds/ubuntu1804-base.box"
         ),
         post_processor.VagrantCloud(
-            box_tag = "catosplace/ubuntu1804-desktop",
+            box_tag = "catosplace/ubuntu1804-base",
             access_token = Ref(access_token),
             version = Ref(version)
         )
 ]
 
 t = Template()
-
 t.add_variable(desktop_user_variables)
+t.add_variable(version)
 t.add_builder(builders)
 t.add_provisioner(provisioners)
 t.add_post_processor(post_processors)
 
-#View Packer Template
+# View Packer Template
 #print(t.to_json())
 
 (ret, out, err) = PackerExecutable(machine_readable=False).validate(t.to_json())
 print(out.decode('unicode_escape'))
 
-(ret, out, err) = PackerExecutable().build(t.to_json())
+(ret, out, err) = PackerExecutable(machine_readable=False).build(t.to_json())
 print(out.decode('unicode_escape'))
