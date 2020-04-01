@@ -1,11 +1,18 @@
 language: python
 
+cache:
+  directories:
+    - iso
+
 python:
   - "3.6"
 
-install:
+before_install:
   - sudo ./install-virtualbox-builder.sh
+  - sudo ./install-packer.sh
+
+install:
   - pip install -r requirements.txt
 
 script:
-  - python3 builder.py
+  - python3 builder.py $VAGRANT_ACCESS_TOKEN
