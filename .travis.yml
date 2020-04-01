@@ -1,5 +1,4 @@
 dist: bionic
-sudo: required
 
 cache:
   directories:
@@ -12,11 +11,12 @@ virtualenv:
   system_site_packages: true
 
 before_install:
-  - ./install-virtualbox-builder.sh
-  - ./install-packer.sh
+  - sudo ./install-virtualbox-builder.sh
+  - sudo ./install-packer.sh
 
 install:
-  - pip install -r requirements.txt
+  - pip3 install -r requirements.txt
 
 script:
-  - python builder.py $VAGRANT_ACCESS_TOKEN
+  - /usr/local/packer --version
+  - python3 builder.py $VAGRANT_ACCESS_TOKEN
