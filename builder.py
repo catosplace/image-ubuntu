@@ -155,10 +155,11 @@ t.add_builder(builders)
 t.add_provisioner(provisioners)
 t.add_post_processor(post_processors)
 
+#View Packer Template
 #print(t.to_json())
 
 (ret, out, err) = PackerExecutable(machine_readable=False).validate(t.to_json())
 print(out.decode('unicode_escape'))
 
-#(ret, out, err) = PackerExecutable().build(t.to_json())
-#print(out.decode('unicode_escape'))
+(ret, out, err) = PackerExecutable().build(t.to_json())
+print(out.decode('unicode_escape'))
