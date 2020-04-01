@@ -2,7 +2,7 @@ dist: bionic
 
 cache:
   directories:
-    - iso
+    - packer_cache 
 
 language: python
 python:
