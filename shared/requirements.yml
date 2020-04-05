@@ -1,3 +1,5 @@
 ---
-- src: geerlingguy.packer-debian
+# - src: geerlingguy.packer-debian
+- src: petersellars.packer_debian
+  version: 1.6.0
 - src: geerlingguy.nfs

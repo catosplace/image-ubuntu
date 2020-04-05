@@ -3,20 +3,26 @@ from packerlicious import builder, post_processor, provisioner, \
         Ref, Template, UserVar
 from packerpy import PackerExecutable
 
-my_access_token = sys.argv[1]
-
-access_token = UserVar("access_token",my_access_token)
 boot_command_prefix = \
-	UserVar("boot_command_prefix","<esc><wait><esc><wait><enter><wait>")
+    UserVar("boot_command_prefix","<esc><esc><enter><wait>")
 build_cpus = UserVar("build_cpus","2")
 cpus = UserVar("cpus","2") 
-disk_size = UserVar("disk_size","40960")
-headless = UserVar("headless","true")
+disk_size = UserVar("disk_size","81920")
+headless = UserVar("headless","false")
 hostname = UserVar("hostname","vagrant")
-iso_checksum = \
-	UserVar("iso_checksum","e2ecdace33c939527cbc9e8d23576381c493b071107207d2040af72595f8990b")
+#iso_checksum_url = \
+#    UserVar("iso_checksum_url", \
+#        "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/SHA256SUMS")
+iso_checksum_url = \
+    UserVar("iso_checksum_url", \
+        "http://cdimage.ubuntu.com/releases/18.04.4/release/SHA256SUMS")
+#iso_url = \
+#    UserVar("iso_url", \
+#        "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso")
 iso_url = \
-	UserVar("iso_url","http://cdimage.ubuntu.com/ubuntu/releases/18.04.4/release/ubuntu-18.04.4-server-amd64.iso")
+    UserVar("iso_url", \
+        "./iso/ubuntu-18.04.4-server-amd64.iso")
+        #"http://cdimage.ubuntu.com/releases/18.04.4/release/ubuntu-18.04.4-server-amd64.iso")
 locale = UserVar("locale","en_NZ")
 memory = UserVar("memory","2048")
 preseed = UserVar("preseed","server.cfg")
@@ -24,17 +30,16 @@ ssh_password = UserVar("ssh_password","vagrant")
 ssh_username = UserVar("ssh_username","vagrant")
 time_zone = UserVar("time_zone","Pacific/Auckland")
 user_uid = UserVar("user_uid","1000")
-vm_name = UserVar("vm_name","ubuntu1804-desktop")
+vm_name = UserVar("vm_name","ubuntu1804-server-base")
 
 desktop_user_variables = [
-        access_token,
 	boot_command_prefix,
 	build_cpus,
 	cpus,
 	disk_size,
 	headless,
 	hostname,
-	iso_checksum,
+        iso_checksum_url,
 	iso_url,
 	locale,
 	memory,
@@ -43,30 +48,32 @@ desktop_user_variables = [
 	ssh_username,
 	time_zone,
 	user_uid,
-        vm_name
-]
+        UserVar("vm_name","ubuntu1804-desktop-base")
+        ]
 
 builders = [
 	builder.VirtualboxIso(
+                
 		boot_command = [
 			Ref(boot_command_prefix),
 			"/install/vmlinuz",
-			" auto",
-			" console-setup/ask_detect=false",
-			" console-setGup/modelcode=pc105",
-			" debconf/frontend=noninteractive",
-			" debian-installer=" + Ref(locale).data,
-			" fb=false",
-			" grub-installer/bootdev=/dev/sda",
-			" initrd=/install/initrd.gz",
-			" kbd-chooser/method=us",
-			" keyboard-configuration/layout=USA",
-			" keyboard-configuration/variant=USA",
-			" keyboard-configuration/xkb-keymap=us",
-			" locale=" + Ref(locale).data,
+                        " noapic",
+                        " initrd=/install/initrd.gz",
+			" debian-installer/locale=" + Ref(locale).data,
+                        " debian-installer/language=en",
+                        " debian-installer/country=NZ",
+                        " auto",
+                        " kbd-chooser/method=us",
+                        " hostname=" + Ref(hostname).data,
+			" grub-installer/bootdev=/dev/sda<wait>",
+                        " fb=false",
+                        " debconf/frontend=noninteractive",
+			" keyboard-configuration/modelcode=SKIP",
+                        " keyboard-configuration/layout=USA",
+                        " keyboard-configuration/variant=USA",
+                        " console-setup/ask_detect=false",
 			" netcfg/get_domain=vm",
 			" netcfg/get_hostname=" + Ref(hostname).data,
-			" noapic",
 			" passwd/user-default-groups='" + Ref(ssh_username).data + " sudo'", 
 			" passwd/user-fullname=" + Ref(ssh_username).data,
 			" passwd/user-uid=" + Ref(user_uid).data,
@@ -76,21 +83,18 @@ builders = [
 			" preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/" +
 				Ref(preseed).data,
 			" time/zone=" + Ref(time_zone).data,
-			" -- ",
+	        	" -- ",
 			"<enter>"
 		],
 		boot_wait = "5s",
 		cpus = Ref(build_cpus),
 		disk_size = Ref(disk_size),
-		floppy_files = [
-			"http/" + Ref(preseed).data
-		],
 		guest_additions_path = "VBoxGuestAdditions_{{.Version}}.iso",
 		guest_os_type = "Ubuntu_64",
 		hard_drive_interface = "sata",
 		headless = Ref(headless),
 		http_directory = "http",
-		iso_checksum = Ref(iso_checksum), 
+                iso_checksum_url = Ref(iso_checksum_url),
 		iso_checksum_type = "sha256",
 		iso_url = Ref(iso_url),
 		output_directory = "builds/packer-" + Ref(vm_name).data +
@@ -103,8 +107,8 @@ builders = [
 		ssh_timeout = "10000s",
 		vboxmanage = [
 			[ "modifyvm", "{{.Name}}", "--nictype1", "virtio" ],
-	    	[ "modifyvm", "{{.Name}}", "--memory", Ref(memory).data ],
-			[ "modifyvm", "{{.Name}}", "--cpus", Ref(cpus).data ]
+	    	        [ "modifyvm", "{{.Name}}", "--memory", Ref(memory).data ],
+			[ "modifyvm", "{{.Name}}", "--cpus", Ref(cpus).data ],
 		],
 		virtualbox_version_file = ".vbox_version",
 		vm_name = Ref(vm_name)	
@@ -117,8 +121,9 @@ provisioners = [
                 "' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
         expect_disconnect = "true",
         scripts = [
-            "scripts/ansible.sh",
-            "scripts/setup.sh"
+            "scripts/desktop.sh",
+            "scripts/setup.sh",
+            "scripts/ansible.sh"
         ]
     ),
     provisioner.AnsibleLocal(
@@ -136,28 +141,31 @@ provisioners = [
 ]
 
 # Get Next Box Version
-r = requests.get("https://app.vagrantup.com/api/v1/box/catosplace/ubuntu1804-base")
-current_box_version = json.loads(r.text)["current_version"]
+r = requests.get("https://app.vagrantup.com/api/v1/box/catosplace/ubuntu1804-desktop-base")
+resp = json.loads(r.text)
+
+if "current_version" not in resp:
+    current_box_version = None
+else:
+    current_box_version = resp["current_version"]
 
 if current_box_version is None:
     next_box_version = "1.0.0"
 else:
-    next_box_version = str(current_box_version.split('.')[0]) + "." + \
-            str(current_box_version.split('.')[1]) + "." + \
-            str(int(current_box_version.split('.')[2]) + 1)
+    next_box_version = str(current_box_version["version"].split('.')[0]) + "." + \
+            str(current_box_version["version"].split('.')[1]) + "." + \
+            str(int(current_box_version["version"].split('.')[2]) + 1)
 
-print("Building new catosplace/ubuntu1804-base box version " + next_box_version)
+print("Building new catosplace/ubuntu1804-desktop-base box version " + next_box_version)
 version = UserVar("version", next_box_version)
 
 post_processors = [
-        post_processor.Vagrant(
-            output = "builds/ubuntu1804-base.box"
-        ),
-        post_processor.VagrantCloud(
-            box_tag = "catosplace/ubuntu1804-base",
-            access_token = Ref(access_token),
-            version = Ref(version)
-        )
+    post_processor.Vagrant(
+        output = "builds/ubuntu1804-desktop-base.box",
+        include = [
+            "info.json"
+        ]
+    )
 ]
 
 t = Template()
@@ -165,10 +173,11 @@ t.add_variable(desktop_user_variables)
 t.add_variable(version)
 t.add_builder(builders)
 t.add_provisioner(provisioners)
-t.add_post_processor(post_processors)
+# Move to new script user artifice
+#t.add_post_processor(post_processors)
 
 # View Packer Template
-#print(t.to_json())
+print(t.to_json())
 
 (ret, out, err) = PackerExecutable(machine_readable=False).validate(t.to_json())
 print(out.decode('unicode_escape'))

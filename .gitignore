@@ -4,6 +4,10 @@ builds/*
 !builds/.gitkeep
 /packer_cache/
 
+### ENV file and Checksums
+.env
+*.checksum
+  
 ### Packer ISOs
 !iso
 iso/*
